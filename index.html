@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+
+<html lang="ko">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>모던 영수증 메이커</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<style>
+
+body { font-family: 'Pretendard', sans-serif; background-color: #e9ecef; margin: 0; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+
+
+.control-panel { background: #fff; width: 100%; max-width: 380px; padding: 25px; border-radius: 16px; margin-bottom: 30px; box-sizing: border-box; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+
+label { display: block; font-size: 12px; margin-bottom: 8px; color: #555; font-weight: bold; }
+
+input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; background: #fafafa; box-sizing: border-box; font-size: 14px; }
+
+
+.receipt-wrapper { margin-bottom: 30px; }
+
+.receipt {
+
+background-color: #fdfbf7;
+
+width: 320px;
+
+padding: 40px 25px;
+
+font-family: 'Courier New', Courier, monospace;
+
+box-sizing: border-box;
+
+border: 1px solid #e6e2d8;
+
+box-shadow: 2px 10px 20px rgba(0,0,0,0.08);
+
+color: #222 !important;
+
+}
+
+
+.receipt-inner { border-top: 2px dashed #d1cdc3; border-bottom: 2px dashed #d1cdc3; padding: 25px 0; margin: 20px 0; }
+
+.r-header { text-align: center; }
+
+.r-title { font-size: 26px; margin: 0 0 10px 0; font-weight: bold; letter-spacing: -1px; }
+
+.r-date { font-size: 13px; margin: 0; color: #555; }
+
+
+.r-item { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 12px; font-weight: 600; }
+
+.r-item.light { font-weight: normal; margin-bottom: 10px; }
+
+.r-total-wrap { display: flex; justify-content: space-between; font-size: 22px; font-weight: bold; margin-top: 5px; }
+
+
+/* 🔥 오류 해결: 텍스트 대신 진짜 막대기(Box)들을 나열하여 바코드 생성 */
+
+.r-barcode-wrap { display: flex; justify-content: center; gap: 3px; height: 35px; margin: 30px 0; }
+
+.r-barcode-wrap div { background-color: #222; }
+
+.bar1 { width: 2px; }
+
+.bar2 { width: 4px; }
+
+.bar3 { width: 1px; }
+
+.bar4 { width: 6px; }
+
+
+.r-footer { text-align: center; font-size: 13px; font-weight: bold; }
+
+
+.btn-download { width: 100%; max-width: 380px; padding: 18px; background: #111; color: #fff; font-size: 16px; font-weight: bold; border: none; border-radius: 12px; cursor: pointer; transition: 0.2s; }
+
+.btn-download:hover { background: #333; }
+
+</style>
+
+</head>
+
+<body>
+
+
+<div class="control-panel">
+
+<h3 style="margin-top:0; text-align:center; color:#111;">🧾 감성 영수증 입력</h3>
+
+<label>영수증 제목</label>
+
+<input type="text" id="inputTitle" value="MY MOOD CAFE" oninput="updateReceipt()">
+
+
+<label>항목 1</label>
+
+<div style="display:flex; gap:10px;">
+
+<input type="text" id="inputItem1" value="따뜻한 아메리카노" oninput="updateReceipt()">
+
+<input type="text" id="inputPrice1" value="4,500" style="width:90px;" oninput="updateReceipt()">
+
+</div>
+
+
+<label>항목 2</label>
+
+<div style="display:flex; gap:10px;">
+
+<input type="text" id="inputItem2" value="여유로운 주말 아침" oninput="updateReceipt()">
+
+<input type="text" id="inputPrice2" value="무료" style="width:90px;" oninput="updateReceipt()">
+
+</div>
+
+
+<label>하단 문구</label>
+
+<input type="text" id="inputFooter" value="Have a good day :)" oninput="updateReceipt()">
+
+</div>
+
+
+<div class="receipt-wrapper">
+
+<div class="receipt" id="receiptImage">
+
+<div class="r-header">
+
+<h1 class="r-title" id="rTitle">MY MOOD CAFE</h1>
+
+<p class="r-date" id="rDate"></p>
+
+</div>
+
+
+<div class="receipt-inner">
+
+<div class="r-item">
+
+<span>ITEM</span>
+
+<span>PRICE</span>
+
+</div>
+
+<br>
+
+<div class="r-item light">
+
+<span id="rItem1">따뜻한 아메리카노</span>
+
+<span id="rPrice1">4,500</span>
+
+</div>
+
+<div class="r-item light">
+
+<span id="rItem2">여유로운 주말 아침</span>
+
+<span id="rPrice2">무료</span>
+
+</div>
+
+</div>
+
+
+<div class="r-total-wrap">
+
+<span>TOTAL</span>
+
+<span>행복</span>
+
+</div>
+
+
+<!-- 기호(텍스트) 대신 실제 태그를 이용해 바코드 형상화 -->
+
+<div class="r-barcode-wrap">
+
+<div class="bar2"></div><div class="bar1"></div><div class="bar3"></div>
+
+<div class="bar4"></div><div class="bar1"></div><div class="bar2"></div>
+
+<div class="bar1"></div><div class="bar3"></div><div class="bar4"></div>
+
+<div class="bar2"></div><div class="bar1"></div><div class="bar3"></div>
+
+<div class="bar4"></div><div class="bar2"></div><div class="bar1"></div>
+
+</div>
+
+
+<div class="r-footer" id="rFooter">Have a good day :)</div>
+
+</div>
+
+</div>
+
+
+<button class="btn-download" onclick="downloadImage()">📸 완벽한 이미지로 저장하기</button>
+
+
+<script>
+
+const today = new Date();
+
+const dateString = today.getFullYear() + "." +
+
+String(today.getMonth() + 1).padStart(2, '0') + "." +
+
+String(today.getDate()).padStart(2, '0') + " " +
+
+String(today.getHours()).padStart(2, '0') + ":" +
+
+String(today.getMinutes()).padStart(2, '0');
+
+document.getElementById('rDate').innerText = dateString;
+
+
+function updateReceipt() {
+
+document.getElementById('rTitle').innerText = document.getElementById('inputTitle').value;
+
+document.getElementById('rItem1').innerText = document.getElementById('inputItem1').value;
+
+document.getElementById('rPrice1').innerText = document.getElementById('inputPrice1').value;
+
+document.getElementById('rItem2').innerText = document.getElementById('inputItem2').value;
+
+document.getElementById('rPrice2').innerText = document.getElementById('inputPrice2').value;
+
+document.getElementById('rFooter').innerText = document.getElementById('inputFooter').value;
+
+}
+
+
+function downloadImage() {
+
+const receipt = document.getElementById('receiptImage');
+
+html2canvas(receipt, { backgroundColor: '#fdfbf7', scale: 2, logging: false }).then(canvas => {
+
+const link = document.createElement('a');
+
+link.download = 'modern_receipt_final.png';
+
+link.href = canvas.toDataURL('image/png');
+
+link.click();
+
+});
+
+}
+
+</script>
+
+</body>
+
+</html>
